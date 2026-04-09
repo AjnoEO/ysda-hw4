@@ -42,7 +42,7 @@ def create_model():
     from huggingface_hub import login, hf_hub_download
     from transformers import AutoTokenizer, AutoModel
 
-    login(HF_TOKEN)
+    if HF_TOKEN: login(HF_TOKEN)
     model_tensors_path = hf_hub_download(repo_id="Ajno/ArxivArticleTagPredictor", filename="model.safetensors")
 
     tokenizer = AutoTokenizer.from_pretrained("distilbert/distilbert-base-cased", token=HF_TOKEN)
