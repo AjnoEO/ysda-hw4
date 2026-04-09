@@ -39,13 +39,18 @@ class TagPredictor(nn.Module):
         return self.classes[self.get_sample_proba(title, summary) >= threshold]
 
 def create_model():
+    from huggingface_hub import login, hf_hub_download
     from transformers import AutoTokenizer, AutoModel
+
+    login(HF_TOKEN)
+    model_tensors_path = hf_hub_download(repo_id="Ajno/ArxivArticleTagPredictor", filename="model.safetensors")
+
     tokenizer = AutoTokenizer.from_pretrained("distilbert/distilbert-base-cased", token=HF_TOKEN)
     model = AutoModel.from_pretrained("distilbert/distilbert-base-cased", token=HF_TOKEN)
 
     embedding_dim = model.embeddings.word_embeddings.embedding_dim
     
     classifier_model = TagPredictor(tokenizer, model, TOPICS["List"], embedding_dim)
-    classifier_model.load_state_dict(load_file("model.safetensors"))
+    classifier_model.load_state_dict(load_file(model_tensors_path))
 
     return classifier_model
