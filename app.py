@@ -14,7 +14,24 @@ import pandas as pd
 def get_model():
     return create_model()
 
-st.session_state.setdefault('threshold_value', 0.62)
+@st.cache_data(show_spinner=False)
+def get_threshold_metrics(threshold: float):
+    result = {}
+    for curve_type in data.CURVE_TRANSLATIONS:
+        result[curve_type] = {}
+        for metric_type, value_dict in data.METRICS[f"{curve_type} curve"].items():
+            left_estimate, right_estimate = 0.0, 1.0
+            for key, value in value_dict.items():
+                if not isinstance(key, float): continue
+                if key > threshold and left_estimate < value: left_estimate = value
+                if key < threshold and right_estimate > value: right_estimate = value
+                if key == threshold:
+                    left_estimate = right_estimate = value
+                    break
+            result[curve_type][metric_type] = (left_estimate + right_estimate) / 2
+    return result
+
+st.session_state.setdefault('threshold_value', 0.064)
 
 # st.sidebar
 
@@ -24,7 +41,19 @@ st.markdown("Введите заголовок и абстракт статьи 
 
 st.text_input("Заголовок статьи", key="article_title")
 st.text_area("Абстракт статьи", key="article_abstract")
-st.slider("Порог вероятности", min_value=0.3, max_value=0.9, key='threshold_value')
+st.slider("Порог вероятности", min_value=0.0, max_value=0.9, key='threshold_value', step=2e-3)
+thr = st.session_state['threshold_value']
+threshold_metrics = get_threshold_metrics(thr)
+metrics_desc_lines = [f"Параметры модели при пороге {thr:.3f}:"]
+for curve_type in threshold_metrics:
+    metrics_desc_lines.append(
+        f'{data.CURVE_TRANSLATIONS[curve_type]}: '
+        f'<abbr title="Доля реальных тэгов статьи, которые модель предсказывает">чувствительность</abbr> '
+        f'= {threshold_metrics[curve_type]["TPR"]*100:.2f}%, '
+        f'<abbr title="Доля тэгов, неподходящих статье, которые модель действительно отвергает">специфичность</abbr> '
+        f'= {(1-threshold_metrics[curve_type]["FPR"])*100:.2f}%, '
+    )
+st.html("</br>".join(metrics_desc_lines))
 if st.button("Определить тэги"):
     with st.spinner("Подгружаю модель..."):
         model = get_model()
