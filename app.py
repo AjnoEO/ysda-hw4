@@ -24,8 +24,10 @@ st.text_input("Заголовок статьи", key="article_title")
 st.text_area("Абстракт статьи", key="article_abstract")
 st.slider("Порог вероятности", min_value=0.3, max_value=0.9, key='threshold_value')
 if st.button("Определить тэги"):
-    model = get_model()
-    probabilities = model.get_sample_proba(st.session_state["article_title"], st.session_state["article_abstract"])
+    with st.spinner("Подгружаю модель..."):
+        model = get_model()
+    with st.spinner("Подбираю тэги..."):
+        probabilities = model.get_sample_proba(st.session_state["article_title"], st.session_state["article_abstract"])
     st.session_state["class_proba"] = probabilities
 
 if "class_proba" in st.session_state:    
