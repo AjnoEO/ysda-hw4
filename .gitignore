@@ -1,0 +1,6 @@
+__pycache__
+*.ipynb
+
+hf_token.txt
+hugging_face_upload.py
+*.safetensors
