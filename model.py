@@ -1,7 +1,6 @@
 from data import HF_TOKEN, TOPICS
 
 import numpy as np
-from safetensors.torch import load_file
 import torch
 from torch import nn
 
@@ -41,6 +40,7 @@ class TagPredictor(nn.Module):
 def create_model():
     from huggingface_hub import login, hf_hub_download
     from transformers import AutoTokenizer, AutoModel
+    from safetensors.torch import load_file
 
     if HF_TOKEN: login(HF_TOKEN)
     model_tensors_path = hf_hub_download(repo_id="Ajno/ArxivArticleTagPredictor", filename="model.safetensors")
