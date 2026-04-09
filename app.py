@@ -16,6 +16,8 @@ def get_model():
 
 st.session_state.setdefault('threshold_value', 0.62)
 
+# st.sidebar
+
 st.title("Тэггер статей")
 st.markdown("Введите заголовок и абстракт статьи для определения подходящих тэгов тематик! "
             "**Модель работает с английскими статьями.**")
@@ -39,7 +41,7 @@ if "class_proba" in st.session_state:
         df.sort_values("Вероятность", inplace=True, ascending=False)
         df["tag"] = df["Код тэга"].map(data.TOPICS["Translations"])
         mask = ~df["tag"].str.contains(", ")
-        df["tag"][mask] = df["tag"][mask] + ", " + df["tag"][mask]
+        df.loc[mask, "tag"] = df.loc[mask, "tag"] + ", " + df.loc[mask, "tag"]
         df[["Макротема", "Тема"]] = df["tag"].str.split(", ", n=1, expand=True)
         st.bar_chart(df, x="Код тэга", y="Вероятность", color="Orange")
         st.dataframe(df[["Макротема", "Тема", "Вероятность"]], hide_index=True)
